@@ -185,8 +185,8 @@ NODE_METHODS(pc_kbd) = {
 };
 
 void
-ob_pc_kbd_init(const char *path, const char *dev_name, uint64_t base,
-               uint64_t offset, int intr)
+ob_pc_kbd_init(const char *path, const char *kdev_name, const char *mdev_name,
+               uint64_t base, uint64_t offset, int kintr, int mintr)
 {
     phandle_t chosen, aliases;
     char nodebuff[128];
@@ -217,20 +217,21 @@ ob_pc_kbd_init(const char *path, const char *dev_name, uint64_t base,
     set_int_property(chosen, "#address-cells", 1);
     set_int_property(chosen, "#size-cells", 0);
     
-    PUSH(intr);
+    PUSH(kintr);
     fword("encode-int");
     push_str("interrupts");
     fword("property");
     
     fword("finish-device");
     
-    snprintf(nodebuff, sizeof(nodebuff), "%s/8042/%s", path, dev_name);
+    /* Keyboard */
+    snprintf(nodebuff, sizeof(nodebuff), "%s/8042/%s", path, kdev_name);
     REGISTER_NAMED_NODE(pc_kbd, nodebuff);
 
     push_str(nodebuff);
     fword("find-device");
 
-    push_str(dev_name);
+    push_str(kdev_name);
     fword("device-name");
 
     push_str("serial");
