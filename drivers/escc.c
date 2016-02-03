@@ -384,6 +384,8 @@ escc_add_channel(const char *path, const char *node, phys_addr_t addr,
 {
     char buf[64], tty[32];
     phandle_t dnode, aliases;
+    int legacy_offsets[][3] = { { 0x4, 0x6, 0xa }, { 0x0, 0x2, 0x8 } };
+    int offsets[][3] = { { 0x20, 0x30, 0x50 }, { 0x00, 0x10, 0x40 } };
 
     cell props[10];
     int offset;
@@ -425,18 +427,18 @@ escc_add_channel(const char *path, const char *node, phys_addr_t addr,
     set_property(dnode, "compatible", buf, 9);
 
     if (legacy) {
-        props[0] = IO_ESCC_LEGACY_OFFSET + offset * 0x4;
-        props[1] = 0x00000001;
-        props[2] = IO_ESCC_LEGACY_OFFSET + offset * 0x4 + 2;
-        props[3] = 0x00000001;
-        props[4] = IO_ESCC_LEGACY_OFFSET + offset * 0x4 + 6;
-        props[5] = 0x00000001;
-        set_property(dnode, "reg", (char *)&props, 6 * sizeof(cell));
+        props[0] = IO_ESCC_LEGACY_OFFSET + legacy_offsets[offset][0];
+        props[2] = IO_ESCC_LEGACY_OFFSET + legacy_offsets[offset][1];
+        props[4] = IO_ESCC_LEGACY_OFFSET + legacy_offsets[offset][2];
     } else {
-        props[0] = IO_ESCC_OFFSET + offset * 0x20;
-        props[1] = 0x00000020;
-        set_property(dnode, "reg", (char *)&props, 2 * sizeof(cell));
+        props[0] = IO_ESCC_LEGACY_OFFSET + offsets[offset][0];
+        props[2] = IO_ESCC_LEGACY_OFFSET + offsets[offset][1];
+        props[4] = IO_ESCC_LEGACY_OFFSET + offsets[offset][2];
     }
+    props[1] = 0x00000001;
+    props[3] = 0x00000001;
+    props[5] = 0x00000001;
+    set_property(dnode, "reg", (char *)&props, 6 * sizeof(cell));
 
     if (legacy) {
         props[0] = addr + IO_ESCC_LEGACY_OFFSET + offset * 0x4;
