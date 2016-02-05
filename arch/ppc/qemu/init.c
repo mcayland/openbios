@@ -601,6 +601,9 @@ go(void)
 {
     ucell addr;
 
+    /* Insert fake copyright notice for OS 9 and below */
+    fword("insert-fake-copyright");
+    
     feval("saved-program-state >sps.entry @");
     addr = POP();
 

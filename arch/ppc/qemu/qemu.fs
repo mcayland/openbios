@@ -121,18 +121,16 @@ variable keyboard-phandle 0 keyboard-phandle !
   active-package!
 ;
 
+: (exit)
+  \ Clean up before returning to the interpreter
+  delete-fake-copyright
+;
+
 \ -------------------------------------------------------------------------
 \ Adler-32 wrapper
 \ -------------------------------------------------------------------------
 
 : adler32 ( adler buf len -- checksum )
-  \ Since Mac OS 9 is the only system using this word, we take this
-  \ opportunity to inject a copyright message that is necessary for the
-  \ system to boot.
-  insert-fake-copyright
-
-  ( adler buf len )
-
   " (adler32)" $find if
     execute
   else
