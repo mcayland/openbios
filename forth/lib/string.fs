@@ -125,3 +125,31 @@
 : parse-hex ( str len -- value )
   base @ hex -rot $number if 0 then swap base !
 ;
+
+
+\ -----------------------------------------------------
+\ miscellaneous functions
+\ -----------------------------------------------------
+
+: rot13-c! ( c-addr -- )
+  \ ROT13 the char at the given address
+  dup c@    \ ( c-addr char )
+  dup h# 41 >= over h# 5a <= and if    \ A-Z
+    h# 41 - h# 0d + h# 1a mod h# 41 + swap c!
+  else
+    dup h# 61 >= over h# 7a <= and if    \ a-z
+      h# 61 - h# 0d + h# 1a mod h# 61 + swap c!
+    else
+      2drop
+    then
+  then
+;
+
+: rot13-str ( str len -- newstr len )
+  \ Return a copy of the string encoded ROT13
+  strdup 0 begin
+    2 pick over chars + rot13-c!
+    1+ 2dup = 
+  until
+  drop
+;
