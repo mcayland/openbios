@@ -464,10 +464,21 @@ escc_add_channel(const char *path, const char *node, phys_addr_t addr,
             (char *)&props, 1 * sizeof(cell)));
 
     props[0] = (0x24) + offset;
-    props[1] = 0;
-    props[2] = 0;
+    props[1] = 1;
+    
+    if (offset) {
+        props[2] = 0x4;
+        props[4] = 0x5;
+    } else {
+        props[2] = 0x6;
+        props[4] = 0x7;
+    }
+    
+    props[3] = 0x0;
+    props[5] = 0x0;
+    
     NEWWORLD(set_property(dnode, "interrupts",
-             (char *)&props, 3 * sizeof(cell)));
+             (char *)&props, 6 * sizeof(cell)));
 
     set_int_property(dnode, "slot-names", 0);
     
