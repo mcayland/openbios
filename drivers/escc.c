@@ -438,7 +438,18 @@ escc_add_channel(const char *path, const char *node, phys_addr_t addr,
     props[1] = 0x00000001;
     props[3] = 0x00000001;
     props[5] = 0x00000001;
-    set_property(dnode, "reg", (char *)&props, 6 * sizeof(cell));
+    
+    if (offset) {
+        props[6] = 0x8400;
+        props[8] = 0x8500;
+    } else {
+        props[6] = 0x8600;
+        props[8] = 0x8700;    
+    }
+
+    props[7] = 0x1;
+    props[9] = 0x1;    
+    set_property(dnode, "reg", (char *)&props, 10 * sizeof(cell));
 
     if (legacy) {
         props[0] = addr + IO_ESCC_LEGACY_OFFSET + offset * 0x4;
