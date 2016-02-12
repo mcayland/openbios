@@ -431,9 +431,9 @@ escc_add_channel(const char *path, const char *node, phys_addr_t addr,
         props[2] = IO_ESCC_LEGACY_OFFSET + legacy_offsets[offset][1];
         props[4] = IO_ESCC_LEGACY_OFFSET + legacy_offsets[offset][2];
     } else {
-        props[0] = IO_ESCC_LEGACY_OFFSET + offsets[offset][0];
-        props[2] = IO_ESCC_LEGACY_OFFSET + offsets[offset][1];
-        props[4] = IO_ESCC_LEGACY_OFFSET + offsets[offset][2];
+        props[0] = IO_ESCC_OFFSET + offsets[offset][0];
+        props[2] = IO_ESCC_OFFSET + offsets[offset][1];
+        props[4] = IO_ESCC_OFFSET + offsets[offset][2];
     }
     props[1] = 0x00000001;
     props[3] = 0x00000001;
