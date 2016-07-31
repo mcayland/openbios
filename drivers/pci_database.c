@@ -52,7 +52,7 @@ static const pci_dev_t scsi_devices[] = {
         NULL, "virtio-blk", NULL,
         "pci1af4,1001\0pci1af4,1001\0pciclass,01018f\0",
         0, 0, 0,
-        NULL, NULL,
+        virtio_blk_config_cb, NULL,
     },
     {
         0xFFFF, 0xFFFF,
