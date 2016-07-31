@@ -222,7 +222,7 @@ void ofmem_arch_create_available_entry(phandle_t ph, ucell *availentry, phys_add
 phys_addr_t
 va2pa(unsigned long va)
 {
-    if (va >= OF_CODE_START && va < OF_CODE_START + OF_CODE_SIZE) {
+    if (va >= OF_CODE_START && va <= OF_CODE_START + OF_CODE_SIZE - 1) {
         return (phys_addr_t)get_rom_base() - OF_CODE_START + va;
     } else {
         return (phys_addr_t)va;
@@ -233,7 +233,7 @@ unsigned long
 pa2va(phys_addr_t pa)
 {
     if ((pa - get_rom_base() + OF_CODE_START >= OF_CODE_START) &&
-        (pa - get_rom_base() + OF_CODE_START < OF_CODE_START + OF_CODE_SIZE))
+        (pa - get_rom_base() + OF_CODE_START <= OF_CODE_START + OF_CODE_SIZE - 1))
         return (unsigned long)pa - get_rom_base() + OF_CODE_START;
     else
         return (unsigned long)pa;
