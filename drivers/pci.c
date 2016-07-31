@@ -581,6 +581,24 @@ int rtl8139_config_cb(const pci_config_t *config)
 	return eth_config_cb(config);
 }
 
+int virtio_blk_config_cb(const pci_config_t *config)
+{
+#ifdef CONFIG_DRIVER_VIRTIO_BLK
+	pci_addr addr;
+	uint8_t idx;
+
+	addr = PCI_ADDR(
+		PCI_BUS(config->dev),
+		PCI_DEV(config->dev),
+		PCI_FN(config->dev));
+	
+	idx = (uint8_t)(pci_config_read16(addr, PCI_DEVICE_ID) & 0xff) - 1;
+	
+	ob_virtio_init(config->path, "virtio-blk", arch->io_base, config->assigned[0] & ~0x0000000F, idx);
+#endif
+	return 0;
+}
+
 static inline void pci_decode_pci_addr(pci_addr addr, int *flags,
 				       int *space_code, uint32_t *mask)
 {
