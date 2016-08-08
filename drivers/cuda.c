@@ -7,7 +7,7 @@
 #include "macio.h"
 #include "cuda.h"
 
-//#define DEBUG_CUDA
+#define DEBUG_CUDA
 #ifdef DEBUG_CUDA
 #define CUDA_DPRINTF(fmt, args...) \
 	do { printk("CUDA - %s: " fmt, __func__ , ##args); } while (0)
@@ -215,6 +215,7 @@ ob_cuda_initialize (int *idx)
 
 	props[0] = 0x19;
 	props[1] = 0;
+//	props[1] = 1;
 	NEWWORLD(set_property(ph, "interrupts", (char *)props, sizeof(props)));
 	NEWWORLD(set_int_property(ph, "#interrupt-cells", 2));
 
@@ -404,6 +405,7 @@ cuda_t *cuda_init (const char *path, phys_addr_t base)
 	char buf[64];
 	phandle_t aliases;
 
+        printk("CUDA init !\n");
 	base += IO_CUDA_OFFSET;
 	CUDA_DPRINTF(" base=" FMT_plx "\n", base);
 	cuda = malloc(sizeof(cuda_t));

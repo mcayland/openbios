@@ -16,6 +16,10 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
+#ifndef __ADB_BUS_H__
+#define __ADB_BUS_H__
+
+#define DEBUG_ADB
 
 typedef struct adb_bus_t adb_bus_t;
 typedef struct adb_dev_t adb_dev_t;
@@ -70,16 +74,6 @@ adb_bus_t *adb_bus_new (void *host,
                                    int len, uint8_t *rcv_buf));
 int adb_bus_init (char *path, adb_bus_t *bus);
 
-static inline int adb_reset (adb_bus_t *bus)
-{
-    adb_dev_t fake_device;
-
-    memset(&fake_device, 0, sizeof(adb_dev_t));
-    fake_device.bus = bus;
-
-    return adb_cmd(&fake_device, ADB_SEND_RESET, 0, NULL, 0);
-}
-
 static inline int adb_flush (adb_dev_t *dev)
 {
     return adb_cmd(dev, ADB_FLUSH, 0, NULL, 0);
@@ -102,3 +96,5 @@ do { printk("ADB - %s: " fmt, __func__ , ##args); } while (0)
 #else
 #define ADB_DPRINTF(fmt, args...) do { } while (0)
 #endif
+
+#endif /* __ADB_BUS_H__ */
