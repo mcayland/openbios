@@ -649,6 +649,32 @@ int rtl8139_config_cb(const pci_config_t *config)
 	return eth_config_cb(config);
 }
 
+int sungem_config_cb (const pci_config_t *config)
+{
+	phandle_t ph = get_cur_dev();
+        volatile uint32_t *mmio;
+        uint32_t val;
+        uint8_t mac[6];
+
+#define MAC_ADDR0	(0x6080UL/4)	/* MAC Address 0 Register	*/
+#define MAC_ADDR1	(0x6084UL/4)	/* MAC Address 1 Register	*/
+#define MAC_ADDR2	(0x6088UL/4)	/* MAC Address 2 Register	*/
+
+        mmio = (volatile void *)(config->assigned[0] & ~0x0000000F);
+        val = in_le32(mmio + MAC_ADDR0);
+        mac[5] = val & 0xff;
+        mac[4] = (val >> 8) & 0xff;
+        val = in_le32(mmio + MAC_ADDR1);
+        mac[3] = val & 0xff;
+        mac[2] = (val >> 8) & 0xff;
+        val = in_le32(mmio + MAC_ADDR2);
+        mac[1] = val & 0xff;
+        mac[0] = (val >> 8) & 0xff;
+	set_property(ph, "local-mac-address", (char *)mac, 6);
+
+        return 0;
+}
+
 static inline void pci_decode_pci_addr(pci_addr addr, int *flags,
 				       int *space_code, uint32_t *mask)
 {
