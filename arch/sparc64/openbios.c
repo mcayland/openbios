@@ -683,7 +683,7 @@ static void init_memory(void)
         printk("panic: not enough virtual memory on host system.\n");
 
     /* Generate the mapping (and lock translation into the TLBs) */
-    ofmem_map(phys, virt, MEMORY_SIZE, ofmem_arch_default_translation_mode(phys) | SPITFIRE_TTE_LOCKED);
+    ofmem_map(phys, virt, MEMORY_SIZE, ofmem_arch_default_translation_mode(phys) | SPITFIRE_TTE_LOCKED | 8);
 
     /* we push start and end of memory to the stack
      * so that it can be used by the forth word QUIT

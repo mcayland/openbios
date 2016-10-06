@@ -62,7 +62,7 @@ ucell ofmem_arch_get_heap_top(void)
 
 ucell ofmem_arch_get_virt_top(void)
 {
-	return (ucell)TOP_OF_RAM;
+	return (ucell)0xff000000;
 }
 
 ucell ofmem_arch_get_iomem_base(void)
@@ -215,7 +215,7 @@ ucell ofmem_arch_default_translation_mode( phys_addr_t phys )
 ucell ofmem_arch_io_translation_mode( phys_addr_t phys )
 {
 	/* Writable, privileged and not locked */
-	return SPITFIRE_TTE_CV | SPITFIRE_TTE_WRITABLE | SPITFIRE_TTE_PRIVILEGED;
+	return SPITFIRE_TTE_CV | SPITFIRE_TTE_WRITABLE | SPITFIRE_TTE_PRIVILEGED | 8;
 }
 
 /* Architecture-specific OFMEM helpers */
