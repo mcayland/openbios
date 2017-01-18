@@ -198,13 +198,17 @@ ob_cuda_initialize (int *idx)
 	phandle_t ph=get_cur_dev();
 	int props[2];
 
-	push_str("via-cuda");
+	if (is_oldworld()) {
+		push_str("cuda");
+		set_property(ph, "compatible", "via-cuda", 9);
+        } else {
+		push_str("via-cuda");
+		set_property(ph, "compatible", "cuda", 5);
+	}
 	fword("device-type");
 
 	set_int_property(ph, "#address-cells", 1);
         set_int_property(ph, "#size-cells", 0);
-
-	set_property(ph, "compatible", "cuda", 5);
 
 	props[0] = __cpu_to_be32(IO_CUDA_OFFSET);
 	props[1] = __cpu_to_be32(IO_CUDA_SIZE);

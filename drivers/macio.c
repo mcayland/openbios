@@ -391,9 +391,11 @@ ob_unin_init(void)
 void
 ob_macio_heathrow_init(const char *path, phys_addr_t addr)
 {
-        phandle_t aliases;
+        phandle_t aliases, ph;
 
 	REGISTER_NODE(ob_macio);
+	ph = find_dev(path);
+	set_property(ph, "device_type", "dbdma", 6);
 	aliases = find_dev("/aliases");
 	set_property(aliases, "mac-io", path, strlen(path) + 1);
 
