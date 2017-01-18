@@ -226,7 +226,7 @@ macparts_open( macparts_info_t *di )
 			(__be32_to_cpu(par.pmPartStatus) & kPartitionAUXIsAllocated) &&
 			(__be32_to_cpu(par.pmPartStatus) & kPartitionAUXIsReadable)) ) {
 		DPRINTF("Partition %d is not valid, allocated and readable\n", parnum);
-		goto out;
+		//goto out;
 	    }
 	    
 	    ret = -1;
