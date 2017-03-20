@@ -34,6 +34,9 @@ fcode-version3
 " fb8-fillrect" (find-xt) value fb8-fillrect-xt
 : fb8-fillrect fb8-fillrect-xt execute ;
 
+" fw-cfg-read-file" (find-xt) value fw-cfg-read-file-xt
+: fw-cfg-read-file fw-cfg-read-file-xt execute ;
+
 \
 \ IO port words
 \
@@ -196,6 +199,11 @@ headerless
   openbios-video-height encode-int " height" property
   depth-bits encode-int " depth" property
   line-bytes encode-int " linebytes" property
+
+  \ Embed NDRV driver if it exists
+  " ndrv/qemu_vga.ndrv" fw-cfg-read-file if
+    encode-string " driver,AAPL,MacOS,PowerPC" property
+  then
 
   ['] qemu-vga-driver-install is-install
 ;
