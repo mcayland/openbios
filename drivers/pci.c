@@ -505,11 +505,10 @@ static void pci_host_set_ranges(const pci_config_t *config)
         ncells += host_encode_phys_addr(props + ncells, arch->rbase);
         ncells += pci_encode_size(props + ncells, arch->rlen);
 	}
-	if (arch->pci_mem_base) {
+	if (arch->host_pci_base) {
 	    ncells += pci_encode_phys_addr(props + ncells, 0, MEMORY_SPACE_32,
-				     config->dev, 0, arch->pci_mem_base);
-        ncells += host_encode_phys_addr(props + ncells, arch->host_pci_base +
-				     arch->pci_mem_base);
+				     config->dev, 0, 0);
+        ncells += host_encode_phys_addr(props + ncells, arch->host_pci_base);
 	ncells += pci_encode_size(props + ncells, arch->mem_len);
 	}
 	set_property(dev, "ranges", (char *)props, ncells * sizeof(props[0]));
