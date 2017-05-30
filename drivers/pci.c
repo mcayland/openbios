@@ -565,6 +565,43 @@ int bridge_config_cb(const pci_config_t *config)
 	return 0;
 }
 
+int simba_config_cb(const pci_config_t *config)
+{
+    bridge_config_cb(config);
+
+    /* Configure the simba ranges as per the mostly undocumented
+       PCI config register in Linux's apb_fake_ranges():
+      
+       pci@1,1 (pciA):
+           IO: 0x1fe02000000-0x1fe027fffff
+          MEM: 0x1ff20000000-0x1ff5fffffff
+          
+       pci@1 (pciB):
+           IO: 0x1fe02800000-0x1fe02ffffff
+          MEM: 0x1ff60000000-0x1ff9fffffff
+    */
+
+    switch (PCI_FN(config->dev)) {
+    case 1:
+        /* IO: 0x1fe02000000-0x1fe027fffff */
+        pci_config_write8(config->dev, 0xde, 0x0f);
+
+        /* MEM: 0x1ff20000000-0x1ff5fffffff */
+        pci_config_write8(config->dev, 0xdf, 0x06);
+        break;
+
+    case 0:
+        /* IO: 0x1fe02800000-0x1fe02ffffff */
+        pci_config_write8(config->dev, 0xde, 0xf0);
+
+        /* MEM: 0x1ff60000000-0x1ff9fffffff */
+        pci_config_write8(config->dev, 0xdf, 0x18);
+        break;
+    }
+
+    return 0;
+}
+
 int ide_config_cb2 (const pci_config_t *config)
 {
 	ob_ide_init(config->path,
@@ -1295,9 +1332,15 @@ static void ob_scan_sabre_pci_bus(int *bus_num, unsigned long *mem_base,
 		is_multi = 0;
 		
 		if (devnum == 1) {
+			/* Force mem_base to match the pciA simba range */
+			*mem_base = 0x20000000;
+			
 			ob_configure_pci_device(path, bus_num, mem_base, io_base,
 				bus, 1, 1, &is_multi);
-	
+
+			/* Force mem_base to match the pciB simba range */
+			*mem_base = 0x60000000;
+			
 			ob_configure_pci_device(path, bus_num, mem_base, io_base,
 				bus, 1, 0, &is_multi);
 		} else {		
