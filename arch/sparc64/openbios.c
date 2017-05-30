@@ -63,7 +63,7 @@ static const struct hwdef hwdefs[] = {
             .pci_mem_base = 0x100000, /* avoid VGA at 0xa0000 */
             .mem_len = 0xf0000000,
             .io_base = APB_SPECIAL_BASE + 0x2000000ULL, // PCI Bus I/O space
-            .io_len = 0x10000,
+            .io_len = 0x1000000,
             .irqs = { 0, 1, 2, 3 },
         },
         .machine_id_low = 0,
