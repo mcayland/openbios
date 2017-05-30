@@ -565,6 +565,31 @@ int bridge_config_cb(const pci_config_t *config)
 	return 0;
 }
 
+int simba_config_cb(const pci_config_t *config)
+{
+    bridge_config_cb(config);
+
+    switch (PCI_FN(config->dev)) {
+    case 1:
+        // IO pci@1,1: 000001fe02000000..000001fe027fffff
+        pci_config_write8(config->dev, 0xde, 0x0f);
+
+        // MEM pci@1,1: 000001ff20000000..000001ff5fffffff
+        pci_config_write8(config->dev, 0xdf, 0x06);
+        break;
+
+    case 0:
+        // IO pci@1 000001fe02800000..000001fe02ffffff
+        pci_config_write8(config->dev, 0xde, 0xf0);
+
+        // MEM pci@1 000001ff60000000..000001ff9fffffff
+        pci_config_write8(config->dev, 0xdf, 0x18);
+        break;
+    }
+
+    return 0;
+}
+
 int ide_config_cb2 (const pci_config_t *config)
 {
 	ob_ide_init(config->path,
