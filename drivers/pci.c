@@ -565,8 +565,15 @@ int bridge_config_cb(const pci_config_t *config)
 	return 0;
 }
 
+static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno);
+
 int simba_config_cb(const pci_config_t *config)
 {
+    u32 props[32];
+    int ncells = 0;
+    phandle_t ph = get_cur_dev();
+    phandle_t dnode = find_dev("/pci");
+
     bridge_config_cb(config);
 
     switch (PCI_FN(config->dev)) {
@@ -576,6 +583,18 @@ int simba_config_cb(const pci_config_t *config)
 
         // MEM pci@1,1: 000001ff20000000..000001ff5fffffff
         pci_config_write8(config->dev, 0xdf, 0x06);
+
+        // Hardcoded interrupt-map for in-built devices
+        ob_pci_host_interrupt(dnode, props, &ncells, 0x20000, 1); // VGA
+        ob_pci_host_interrupt(dnode, props, &ncells, 0x20800, 1); // ebus
+        ob_pci_host_interrupt(dnode, props, &ncells, 0x21000, 1); // cmd646
+        set_property(ph, "interrupt-map", (char *)props, ncells * sizeof(props[0]));
+
+        props[0] = 0xfff800;
+        props[1] = 0x0;
+        props[2] = 0x0;
+        props[3] = 0xf;
+        set_property(ph, "interrupt-map-mask", (char *)props, 4 * sizeof(props[0]));
         break;
 
     case 0:
@@ -1634,10 +1653,10 @@ static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
 static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
 {
     *ncells += pci_encode_phys_addr(props + *ncells, 0, 0, addr, 0, 0);
-    props[*ncells++] = intno;
-    props[*ncells++] = dnode;
-    props[*ncells++] = arch->irqs[((intno - 1) + (addr >> 11)) & 3];
-    props[*ncells++] = 1;
+    props[(*ncells)++] = intno;
+    props[(*ncells)++] = dnode;
+    props[(*ncells)++] = arch->irqs[((intno - 1) + (addr >> 11)) & 3];
+    props[(*ncells)++] = 1;
 }
 
 #elif defined(CONFIG_SPARC64)
@@ -1657,9 +1676,10 @@ static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
 static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
 {
     *ncells += pci_encode_phys_addr(props + *ncells, 0, 0, addr, 0, 0);
-    props[*ncells++] = intno;
-    props[*ncells++] = dnode;
-    props[*ncells++] = SUN4U_INTERRUPTA(addr, intno);
+    props[(*ncells)++] = intno;
+    props[(*ncells)++] = dnode;
+    //props[(*ncells)++] = SUN4U_INTERRUPTA(addr, intno);
+    props[(*ncells)++] = 0x1c;
 }
 
 #else
