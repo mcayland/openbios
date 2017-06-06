@@ -1572,13 +1572,10 @@ static void ob_pci_set_available(phandle_t host, unsigned long mem_base, unsigne
     set_property(host, "available", (char *)props, ncells * sizeof(props[0]));
 }
 
-/* Convert device/irq pin to interrupt property */
-#define SUN4U_INTERRUPT(dev, irq_pin) \
-            (((((dev >> 11) << 2) + irq_pin - 1) + 0x10) & 0x1f)
+#if defined(CONFIG_PPC)
 
 static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
 {
-#if defined(CONFIG_PPC)
     phandle_t target_node;
     char *path, buf[256];
 
@@ -1632,10 +1629,50 @@ static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
         target_node = find_dev(path);
         set_int_property(target_node, "interrupt-parent", dnode);
     }
-#endif
 }
 
-static void ob_pci_bus_set_interrupt_map(phandle_t host, phandle_t dnode)
+static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
+{
+    *ncells += pci_encode_phys_addr(props + *ncells, 0, 0, addr, 0, 0);
+    props[*ncells++] = intno;
+    props[*ncells++] = dnode;
+    props[*ncells++] = arch->irqs[((intno - 1) + (addr >> 11)) & 3];
+    props[*ncells++] = 1;
+}
+
+#elif defined(CONFIG_SPARC64)
+
+/* Convert device/irq pin to interrupt property */
+#define SUN4U_INTERRUPTA(dev, irq_pin) \
+            (((((dev >> 11) << 2) + irq_pin - 1) + 0x0) & 0x1f)
+
+#define SUN4U_INTERRUPTB(dev, irq_pin) \
+            (((((dev >> 11) << 2) + irq_pin - 1) + 0x10) & 0x1f)
+            
+static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
+{
+    return;
+}
+           
+static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
+{
+    *ncells += pci_encode_phys_addr(props + *ncells, 0, 0, addr, 0, 0);
+    props[*ncells++] = intno;
+    props[*ncells++] = dnode;
+    props[*ncells++] = SUN4U_INTERRUPTA(addr, intno);
+}
+
+#else
+
+static void ob_pci_host_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
+{
+    return;
+}
+
+#endif
+
+static void ob_pci_bus_set_interrupt_map(phandle_t host, phandle_t dnode,
+                                         void (*func)(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno))
 {
     /* Set interrupt-map for PCI devices with an interrupt pin present */
     phandle_t pci_childnode = 0;
@@ -1661,25 +1698,11 @@ static void ob_pci_bus_set_interrupt_map(phandle_t host, phandle_t dnode)
 
                     /* Device address is in 1st 32-bit word of encoded PCI address for config space */
                     if ((addr & PCI_RANGE_TYPE_MASK) == PCI_RANGE_CONFIG) {
-#if defined(CONFIG_SPARC64)
 		        printk("######## SO addr is %x\n", addr);
 			printk("######## Dev is %x\n", PCI_DEV(addr));
 			printk("######## Slot is %x\n", (PCI_DEV(addr) >> 11));
-
-                        ncells += pci_encode_phys_addr(props + ncells, 0, 0, addr, 0, 0);
-                        props[ncells++] = intno;
-                        props[ncells++] = dnode;
-                        props[ncells++] = 0x1c; //SUN4U_INTERRUPT(addr, intno); // 0x1c
-#elif defined(CONFIG_PPC)
-                        ncells += pci_encode_phys_addr(props + ncells, 0, 0, addr, 0, 0);
-                        props[ncells++] = intno;
-                        props[ncells++] = dnode;
-                        props[ncells++] = arch->irqs[((intno - 1) + (addr >> 11)) & 3];
-                        props[ncells++] = 1;
-#else
-                        /* Keep compiler quiet */
-                        dnode = dnode;
-#endif
+			
+                        (*func)(dnode, props, &ncells, addr, intno);
                     }
                 }
             }
@@ -1689,7 +1712,10 @@ static void ob_pci_bus_set_interrupt_map(phandle_t host, phandle_t dnode)
         fword("peer");
         pci_childnode = POP();
     }
-    set_property(host, "interrupt-map", (char *)props, ncells * sizeof(props[0]));
+    
+    if (ncells) {
+        set_property(host, "interrupt-map", (char *)props, ncells * sizeof(props[0]));
+    }
 
     props[0] = 0xfff800;
     props[1] = 0x0;
@@ -1757,9 +1783,9 @@ int ob_pci_init(void)
     ob_pci_set_available(phandle_host, mem_base, io_base);
 
     /* configure the host bridge interrupt map */
-    phandle_t ph = find_dev("/pci/pci@1,1");
-    ob_pci_host_set_interrupt_map(ph, phandle_host);
-    ob_pci_bus_set_interrupt_map(ph, phandle_host);
+    phandle_t ph = find_dev("/pci");
+    ob_pci_host_set_interrupt_map(phandle_host, ph);
+    ob_pci_bus_set_interrupt_map(phandle_host, ph, &ob_pci_host_interrupt);
 
     device_end();
 
