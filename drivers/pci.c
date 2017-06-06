@@ -1578,12 +1578,6 @@ static void ob_pci_set_available(phandle_t host, unsigned long mem_base, unsigne
 
 static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
 {
-    phandle_t pci_childnode = 0;
-    u32 props[128], intno;
-    int i, ncells, len;
-    u32 *val, addr;
-    char *reg;
-
 #if defined(CONFIG_PPC)
     phandle_t target_node;
     char *path, buf[256];
@@ -1639,8 +1633,17 @@ static void ob_pci_host_set_interrupt_map(phandle_t host, phandle_t dnode)
         set_int_property(target_node, "interrupt-parent", dnode);
     }
 #endif
+}
 
+static void ob_pci_bus_set_interrupt_map(phandle_t host, phandle_t dnode)
+{
     /* Set interrupt-map for PCI devices with an interrupt pin present */
+    phandle_t pci_childnode = 0;
+    u32 props[128], intno;
+    int i, ncells, len;
+    u32 *val, addr;
+    char *reg;
+    
     ncells = 0;
 
     PUSH(host);
@@ -1756,6 +1759,7 @@ int ob_pci_init(void)
     /* configure the host bridge interrupt map */
     phandle_t ph = find_dev("/pci/pci@1,1");
     ob_pci_host_set_interrupt_map(ph, phandle_host);
+    ob_pci_bus_set_interrupt_map(ph, phandle_host);
 
     device_end();
 
