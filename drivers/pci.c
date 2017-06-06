@@ -1803,9 +1803,8 @@ int ob_pci_init(void)
     ob_pci_set_available(phandle_host, mem_base, io_base);
 
     /* configure the host bridge interrupt map */
-    phandle_t ph = find_dev("/pci");
-    ob_pci_host_set_interrupt_map(phandle_host, ph);
-    ob_pci_bus_set_interrupt_map(phandle_host, ph, &ob_pci_host_interrupt);
+    ob_pci_host_set_interrupt_map(phandle_host, phandle_host);
+    ob_pci_bus_set_interrupt_map(phandle_host, phandle_host, &ob_pci_host_interrupt);
 
     device_end();
 
