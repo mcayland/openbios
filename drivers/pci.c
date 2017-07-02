@@ -938,7 +938,14 @@ int ebus_config_cb(const pci_config_t *config)
     props[8] = find_dev("/pci");
     props[9] = 0x29;
 
-    set_property(dev, "interrupt-map", (char *)props, 10 * sizeof(props[0]));
+    /* PS2 mouse */
+    props[10] = 0x14;
+    props[11] = 0x60;
+    props[12] = 2;
+    props[13] = find_dev("/pci");
+    props[14] = 0x2a;
+    
+    set_property(dev, "interrupt-map", (char *)props, 15 * sizeof(props[0]));
 
     props[0] = 0x000001ff;
     props[1] = 0xffffffff;
@@ -1007,7 +1014,7 @@ int ebus_config_cb(const pci_config_t *config)
     ob_pc_serial_init(config->path, "su", (PCI_BASE_ADDR_1 | 0ULL) << 32, 0x3f8ULL, 0);
 #endif
 #ifdef CONFIG_DRIVER_PC_KBD
-    ob_pc_kbd_init(config->path, "kb_ps2", NULL, (PCI_BASE_ADDR_1 | 0ULL) << 32, 0x60ULL, 1, 0);
+    ob_pc_kbd_init(config->path, "kb_ps2", "kdmouse", (PCI_BASE_ADDR_1 | 0ULL) << 32, 0x60ULL, 1, 0);
 #endif
 #endif
     return 0;
