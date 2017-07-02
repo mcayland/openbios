@@ -927,7 +927,7 @@ int ebus_config_cb(const pci_config_t *config)
     props[0] = 0x14;
     props[1] = 0x3f8;
     props[2] = 1;
-    props[3] = find_dev("/");
+    props[3] = find_dev("/pci");
     props[4] = 0x2b;
     set_property(dev, "interrupt-map", (char *)props, 5 * sizeof(props[0]));
 
@@ -1766,13 +1766,11 @@ static phandle_t ob_pci_host_set_interrupt_map(phandle_t host)
            
 static void ob_pci_host_bus_interrupt(ucell dnode, u32 *props, int *ncells, u32 addr, u32 intno)
 {
-    /* Note: this can be removed when the Simba bridges are in place
+    /* Note: this is invalid when the Simba bridges are in place
        as it is impossible to physically plug hardware into the PCI
-       root bus */
-    *ncells += pci_encode_phys_addr(props + *ncells, 0, 0, addr, 0, 0);
-    props[(*ncells)++] = intno;
-    props[(*ncells)++] = dnode;
-    props[(*ncells)++] = SUN4U_PCIAINTERRUPT(addr, intno);
+       root bus (and no hardware support for mapping these interrupts
+       either) */
+    return;
 }
 
 #else
