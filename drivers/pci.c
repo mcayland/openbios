@@ -916,7 +916,7 @@ int ebus_config_cb(const pci_config_t *config)
 {
 #ifdef CONFIG_DRIVER_EBUS
     phandle_t dev = get_cur_dev();
-    uint32_t props[12];
+    uint32_t props[15];
     int ncells;
     int i;
     uint32_t mask;
@@ -937,7 +937,7 @@ int ebus_config_cb(const pci_config_t *config)
     props[7] = 1;
     props[8] = find_dev("/pci");
     props[9] = 0x29;
-    
+
     set_property(dev, "interrupt-map", (char *)props, 10 * sizeof(props[0]));
 
     props[0] = 0x000001ff;
