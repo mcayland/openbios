@@ -633,6 +633,15 @@ int eth_config_cb (const pci_config_t *config)
         return 0;
 }
 
+int hme_config_cb(const pci_config_t *config)
+{
+	phandle_t ph = get_cur_dev();
+	
+	set_int_property(ph, "hm-rev", 0x21);
+	
+	return eth_config_cb(config);
+}
+
 int rtl8139_config_cb(const pci_config_t *config)
 {
 #ifdef CONFIG_PPC
