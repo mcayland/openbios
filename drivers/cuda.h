@@ -1,3 +1,6 @@
+#ifndef __CUDA_H__
+#define __CUDA_H__
+
 #include "adb_bus.h"
 
 struct cuda_t {
@@ -15,3 +18,5 @@ enum {
 };
 
 cuda_t *cuda_init (const char *path, phys_addr_t base);
+
+#endif /*  __CUDA_H__ */

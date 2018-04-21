@@ -276,7 +276,7 @@ void
 set_property( phandle_t ph, const char *name, const char *buf, int len )
 {
 	if( !ph ) {
-		printk("set_property: NULL phandle\n");
+		printk("set_property: NULL phandle (name: %s)\n", name);
 		return;
 	}
 	PUSH(pointer2cell(buf));

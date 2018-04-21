@@ -74,22 +74,29 @@ enum {
     ARCH_MAC99,
     ARCH_HEATHROW,
     ARCH_MAC99_U3,
+    ARCH_MAC99P,
 };
 
-int is_apple(void)
+bool is_apple(void)
 {
     return is_oldworld() || is_newworld();
 }
 
-int is_oldworld(void)
+bool is_oldworld(void)
 {
     return machine_id == ARCH_HEATHROW;
 }
 
-int is_newworld(void)
+bool is_newworld(void)
 {
     return (machine_id == ARCH_MAC99) ||
-           (machine_id == ARCH_MAC99_U3);
+            (machine_id == ARCH_MAC99_U3) ||
+            (machine_id == ARCH_MAC99P);
+}
+
+bool has_pmu(void)
+{
+    return (machine_id == ARCH_MAC99P || machine_id == ARCH_MAC99_U3);
 }
 
 static const pci_arch_t known_arch[] = {
@@ -115,6 +122,26 @@ static const pci_arch_t known_arch[] = {
     },
     [ARCH_MAC99] = {
         .name = "MAC99",
+        .vendor_id = PCI_VENDOR_ID_APPLE,
+        .device_id = PCI_DEVICE_ID_APPLE_UNI_N_PCI,
+        .cfg_addr = 0xf2800000,
+        .cfg_data = 0xf2c00000,
+        .cfg_base = 0xf2000000,
+        .cfg_len = 0x02000000,
+        .host_pci_base = 0x0,
+        .pci_mem_base = 0x80000000,
+        .mem_len = 0x10000000,
+        .io_base = 0xf2000000,
+        .io_len = 0x00800000,
+        .host_ranges = {
+            { .type = IO_SPACE, .parentaddr = 0, .childaddr = 0xf2000000, .len = 0x00800000 },
+            { .type = MEMORY_SPACE_32, .parentaddr = 0x80000000, .childaddr = 0x80000000, .len = 0x10000000 },
+            { .type = 0, .parentaddr = 0, .childaddr = 0, .len = 0 }
+         },
+        .irqs = { 0x1b, 0x1c, 0x1d, 0x1e }
+    },
+    [ARCH_MAC99P] = {
+        .name = "MAC99P",
         .vendor_id = PCI_VENDOR_ID_APPLE,
         .device_id = PCI_DEVICE_ID_APPLE_UNI_N_PCI,
         .cfg_addr = 0xf2800000,
@@ -841,11 +868,47 @@ arch_of_init(void)
         fword("property");
         break;
 
-    case ARCH_MAC99:
+    case ARCH_MAC99P:
     case ARCH_MAC99_U3:
+
+        /* model */
+
+        push_str("PowerMac3,6");
+        fword("model");
+
+        /* compatible */
+
+        push_str("PowerMac3,6");
+        fword("encode-string");
+        push_str("MacRISC2");
+        fword("encode-string");
+        fword("encode+");
+        push_str("MacRISC");
+        fword("encode-string");
+        fword("encode+");
+        push_str("Power Macintosh");
+        fword("encode-string");
+        fword("encode+");
+        push_str("Power Macintosh");
+        fword("encode-string");
+        fword("encode+");
+        push_str("compatible");
+        fword("property");
+
+        /* misc */
+
+        push_str("bootrom");
+        fword("device-type");
+
+        PUSH(fw_cfg_read_i32(FW_CFG_PPC_BUSFREQ));
+        fword("encode-int");
+        push_str("clock-frequency");
+        fword("property");
+        break;
+
+    case ARCH_MAC99:
     case ARCH_PREP:
     default:
-
         /* model */
 
         push_str("PowerMac3,1");
@@ -912,7 +975,7 @@ arch_of_init(void)
     node_methods_init(buf);
 
 #ifdef CONFIG_RTAS
-    /* OldWorld Macs don't have an /rtas node. */
+    /* OldWorld and really new Macs don't have an /rtas node. */
     switch (machine_id) {
     case ARCH_MAC99:
     case ARCH_MAC99_U3:

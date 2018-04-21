@@ -22,7 +22,7 @@
 #include "config.h"
 #include "libopenbios/bindings.h"
 #include "libc/vsprintf.h"
-
+#include "drivers/drivers.h"
 #include "adb_bus.h"
 #include "adb_kbd.h"
 #include "adb_mouse.h"
@@ -37,7 +37,10 @@ adb_initialize (int *idx)
 	push_str("adb");
 	fword("device-type");
 
-	set_property(ph, "compatible", "adb", 4);
+        if (has_pmu())
+                set_property(ph, "compatible", "pmu-99", 7);
+        else
+                set_property(ph, "compatible", "adb", 4);
 	set_int_property(ph, "#address-cells", 1);
 	set_int_property(ph, "#size-cells", 0);
 }
@@ -72,6 +75,16 @@ adb_bus_t *adb_bus_new (void *host,
     new->req = req;
 
     return new;
+}
+
+static int adb_reset (adb_bus_t *bus)
+{
+    adb_dev_t fake_device;
+
+    memset(&fake_device, 0, sizeof(adb_dev_t));
+    fake_device.bus = bus;
+
+    return adb_cmd(&fake_device, ADB_SEND_RESET, 0, NULL, 0);
 }
 
 /* Check and relocate all ADB devices as suggested in

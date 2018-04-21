@@ -11,6 +11,8 @@
 #ifndef OPENBIOS_DRIVERS_H
 #define OPENBIOS_DRIVERS_H
 
+#include <stdbool.h>
+
 #include "config.h"
 
 #ifdef CONFIG_DRIVER_PCI
@@ -20,21 +22,26 @@ int ob_pci_init(void);
 
 #if defined(CONFIG_DRIVER_PCI) || defined(CONFIG_DRIVER_ESCC)
 #ifdef CONFIG_PPC
-extern int is_apple(void);
-extern int is_oldworld(void);
-extern int is_newworld(void);
+extern bool is_apple(void);
+extern bool is_oldworld(void);
+extern bool is_newworld(void);
+extern bool has_pmu(void);
 #else
-static inline int is_apple(void)
+static inline bool is_apple(void)
 {
-	return 0;
+	return false;
 }
-static inline int is_oldworld(void)
+static inline bool is_oldworld(void)
 {
-	return 0;
+	return false;
 }
-static inline int is_newworld(void)
+static inline bool is_newworld(void)
 {
-	return 0;
+	return false;
+}
+static inline bool has_pmu(void)
+{
+	return false;
 }
 #endif
 #define AAPL(_cmd)      do { if (is_apple()) _cmd; } while(0)
