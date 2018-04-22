@@ -18,6 +18,27 @@ include config.fs
 1 encode-int " #size-cells" property
 h# 05f5e100 encode-int " clock-frequency" property
 
+	: dma-sync  ( virt devaddr size -- )
+	  s" (dma-sync)" $find if execute then
+	;
+
+	: dma-alloc  ( size -- virt )
+	  h# 1000 + alloc-mem dup
+	  h# 1000 1 - and -  \ align to 4K page size
+	;
+
+	: dma-free  ( virt size -- )
+	  2drop
+	;
+
+	: dma-map-in  ( virt size cacheable? -- devaddr )
+	  2drop
+	;
+
+	: dma-map-out  ( virt devaddr size -- )
+	  dma-sync
+	;
+
 new-device
 	" cpus" device-name
 	1 encode-int " #address-cells" property

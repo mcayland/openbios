@@ -751,6 +751,18 @@ static void adler32(void)
     RET(s2 << 16 | s1);
 }
 
+/* ( virt devaddr size -- ) */
+static void
+dma_sync(void)
+{
+    ucell size = POP();
+    POP();
+    ucell virt = POP();
+
+    flush_dcache_range(cell2pointer(virt), cell2pointer(virt + size));
+    flush_icache_range(cell2pointer(virt), cell2pointer(virt + size));
+}
+
 void
 arch_of_init(void)
 {
@@ -1022,4 +1034,5 @@ arch_of_init(void)
     
     bind_func("platform-boot", boot);
     bind_func("(arch-go)", arch_go);
+    bind_func("(dma-sync)", dma_sync);
 }
