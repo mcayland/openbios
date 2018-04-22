@@ -77,6 +77,11 @@ new-device
   : decode-unit decode-unit-sbus ;
   : map-in map-in-sbus ;
   : map-out map-out-sbus ;
+  : dma-alloc " dma-alloc" $call-parent ;
+  : dma-free " dma-free" $call-parent ;
+  : dma-map-in " dma-map-in" $call-parent ;
+  : dma-map-out " dma-map-out" $call-parent ;
+  : dma-sync " dma-sync" $call-parent ;
 finish-device
 
 [IFDEF] CONFIG_BPP
@@ -94,6 +99,11 @@ new-device
   external
   : encode-unit encode-unit-sbus ;
   : decode-unit decode-unit-sbus ;
+  : dma-alloc " dma-alloc" $call-parent ;
+  : dma-free " dma-free" $call-parent ;
+  : dma-map-in " dma-map-in" $call-parent ;
+  : dma-map-out " dma-map-out" $call-parent ;
+  : dma-sync " dma-sync" $call-parent ;
 finish-device
 
 " /iommu/sbus" find-device
@@ -103,6 +113,11 @@ new-device
   external
   : encode-unit encode-unit-sbus ;
   : decode-unit decode-unit-sbus ;
+  : dma-alloc " dma-alloc" $call-parent ;
+  : dma-free " dma-free" $call-parent ;
+  : dma-map-in " dma-map-in" $call-parent ;
+  : dma-map-out " dma-map-out" $call-parent ;
+  : dma-sync " dma-sync" $call-parent ;
 finish-device
 
 " /iommu/sbus/ledma" find-device
@@ -111,6 +126,11 @@ new-device
   " network" device-type
   h# 7 encode-int " busmaster-regval" property
   h# 26 encode-int 0 encode-int encode+ " intr" property
+  : dma-alloc " dma-alloc" $call-parent ;
+  : dma-free " dma-free" $call-parent ;
+  : dma-map-in " dma-map-in" $call-parent ;
+  : dma-map-out " dma-map-out" $call-parent ;
+  : dma-sync " dma-sync" $call-parent ;
 finish-device
 
 \ obio (on-board IO)
