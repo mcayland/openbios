@@ -806,6 +806,43 @@ static void init_memory(void)
     PUSH(virt + MEMORY_SIZE);
 }
 
+/* ( size -- virt ) */
+static void
+dma_alloc(void)
+{
+    ucell size = POP();
+    unsigned long *va;
+
+    va = dvma_alloc(size);
+
+    PUSH(pointer2cell(va));
+}
+
+/* ( virt devaddr size -- ) */
+static void
+dma_sync(void)
+{
+    ucell size = POP();
+    POP();
+    ucell virt = POP();
+
+    dvma_sync(cell2pointer(virt), size);
+}
+
+/* ( virt size cacheable? -- devaddr ) */
+static void
+dma_map_in(void)
+{
+    unsigned int iova;
+
+    POP();
+    POP();
+    ucell virt = POP();
+
+    iova = dvma_map_in(cell2pointer(virt));
+    PUSH((ucell)iova);
+}
+
 static void
 arch_init( void )
 {
@@ -916,7 +953,10 @@ arch_init( void )
 	
 	bind_func("platform-boot", boot );
 	bind_func("(arch-go)", setup_romvec );
-	
+	bind_func("(dma-alloc)", dma_alloc );
+	bind_func("(dma-sync)", dma_sync );
+	bind_func("(dma-map-in)", dma_map_in );
+
 	/* Set up other properties */
         push_str("/chosen");
         fword("find-device");

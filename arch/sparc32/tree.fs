@@ -10,6 +10,26 @@ include config.fs
   : encode-unit encode-unit-sbus ;
   : decode-unit decode-unit-sbus ;
 
+  : dma-sync
+    s" (dma-sync)" $find if execute then
+  ;
+
+  : dma-alloc
+    s" (dma-alloc)" $find if execute then
+  ;
+
+  : dma-free
+    2drop
+  ;
+
+  : dma-map-in
+    s" (dma-map-in)" $find if execute then
+  ;
+
+  : dma-map-out
+    dma-sync
+  ;
+
 new-device
   " memory" device-name
   external
