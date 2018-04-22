@@ -722,6 +722,21 @@ static void init_memory(void)
     PUSH(virt + MEMORY_SIZE);
 }
 
+/* ( virt devaddr size -- ) */
+static void
+dma_sync(void)
+{
+    ucell size = POP();
+    POP();
+    ucell virt = POP();
+    ucell va;
+
+    for (va = virt; va < virt + size; va += PAGE_SIZE_8K) {
+        itlb_demap(va);
+        dtlb_demap(va);
+    }
+}
+
 extern volatile uint64_t *obp_ticks_pointer;
 
 static void
@@ -755,6 +770,7 @@ arch_init( void )
         fword("eval");
 
 	bind_func("platform-boot", boot );
+    bind_func("(dma-sync)", dma_sync);
 }
 
 unsigned long isa_io_base;
