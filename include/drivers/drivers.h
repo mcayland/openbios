@@ -139,6 +139,10 @@ int keyboard_dataready(void);
 unsigned char keyboard_readdata(void);
 #endif
 #endif
+#ifdef CONFIG_DRIVER_VIRTIO_BLK
+void ob_virtio_init(const char *path, const char *dev_name, uint64_t base,
+                    uint64_t offset, int idx);
+#endif
 int macio_get_nvram_size(void);
 void macio_nvram_put(char *buf);
 void macio_nvram_get(char *buf);
