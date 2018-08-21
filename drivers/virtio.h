@@ -22,6 +22,35 @@
 /* PCI configuration access */ 
 #define VIRTIO_PCI_CAP_PCI_CFG          5 
 
+
+
+#define VIRTIO_PCI_COMMON_DFSELECT      0
+#define VIRTIO_PCI_COMMON_DF            4
+#define VIRTIO_PCI_COMMON_GFSELECT      8
+#define VIRTIO_PCI_COMMON_GF            12
+#define VIRTIO_PCI_COMMON_MSIX          16
+#define VIRTIO_PCI_COMMON_NUMQ          18
+#define VIRTIO_PCI_COMMON_STATUS        20
+#define VIRTIO_PCI_COMMON_CFGGENERATION 21
+#define VIRTIO_PCI_COMMON_Q_SELECT      22
+#define VIRTIO_PCI_COMMON_Q_SIZE        24
+#define VIRTIO_PCI_COMMON_Q_MSIX        26
+#define VIRTIO_PCI_COMMON_Q_ENABLE      28
+#define VIRTIO_PCI_COMMON_Q_NOFF        30
+#define VIRTIO_PCI_COMMON_Q_DESCLO      32
+#define VIRTIO_PCI_COMMON_Q_DESCHI      36
+#define VIRTIO_PCI_COMMON_Q_AVAILLO     40
+#define VIRTIO_PCI_COMMON_Q_AVAILHI     44
+#define VIRTIO_PCI_COMMON_Q_USEDLO      48
+#define VIRTIO_PCI_COMMON_Q_USEDHI      52
+
+
+
+
+
+
+
+
 /* A 32-bit r/o bitmask of the features supported by the host */
 #define VIRTIO_PCI_HOST_FEATURES        0
 
@@ -285,6 +314,8 @@ typedef struct ScsiDevice ScsiDevice;
 
 struct VDev {
     uint32_t io_base;
+    uint64_t common_cfg;
+    uint64_t device_cfg;
     uint64_t pos;
     int nr_vqs;
     VRing *vrings;

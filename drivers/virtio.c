@@ -27,19 +27,39 @@ static uint8_t virtio_cfg_read8(VDev *vdev, int addr)
     return inb((uint32_t)(vdev->io_base + addr));
 }
 
+static uint8_t virtio_cfg_read8m(uint64_t cfg_addr, int addr)
+{
+    return in_8((uint8_t *)(uintptr_t)(cfg_addr + addr));
+}
+/*
 static void virtio_cfg_write8(VDev *vdev, int addr, uint8_t value)
 {
     outb(value, vdev->io_base + addr);
 }
-
+*/
+static void virtio_cfg_write8m(uint64_t cfg_addr, int addr, uint8_t value)
+{
+    out_8((uint8_t *)(uintptr_t)(cfg_addr + addr), value);
+}
+/*
 static uint16_t virtio_cfg_read16(VDev *vdev, int addr)
 {
     return inw(vdev->io_base + addr);
+}
+*/
+static uint16_t virtio_cfg_read16m(uint64_t cfg_addr, int addr)
+{
+    return in_le16((uint16_t *)(uintptr_t)(cfg_addr + addr));
 }
 
 static void virtio_cfg_write16(VDev *vdev, int addr, uint16_t value)
 {
     outw(value, vdev->io_base + addr);
+}
+
+static void virtio_cfg_write16m(uint64_t cfg_addr, int addr, uint16_t value)
+{
+    out_le16((uint16_t *)(uintptr_t)(cfg_addr + addr), value);
 }
 
 static uint32_t virtio_cfg_read32(VDev *vdev, int addr)
@@ -438,12 +458,15 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
     _vdev = cell2pointer(POP());
 
     vdev = malloc(sizeof(VDev));
+    // FIXME
     vdev->io_base = offset;
+    vdev->common_cfg = common_cfg;
+    vdev->device_cfg = device_cfg;
 
     /* Indicate we recognise the device */
-    status = virtio_cfg_read8(vdev, VIRTIO_PCI_STATUS);
+    status = virtio_cfg_read8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS);
     status |= VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
-    virtio_cfg_write8(vdev, VIRTIO_PCI_STATUS, status);
+    virtio_cfg_write8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS, status);
 
     vdev->senseid = VIRTIO_ID_BLOCK;
     vdev->nr_vqs = 1;
@@ -469,10 +492,13 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
             .index = i,
             .num = 0,
         };
+        
+        virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_SELECT, i);
+        info.num = virtio_cfg_read16m(vdev->common_cfg, VIRTIO_PCI_COMMON_NUMQ);
 
-        virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_SEL, i);
-        info.num = virtio_cfg_read16(vdev, VIRTIO_PCI_QUEUE_NUM);
-
+        //virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_SEL, i);
+        //info.num = virtio_cfg_read16(vdev, VIRTIO_PCI_QUEUE_NUM);
+        
         vring_init(&vdev->vrings[i], &info);
 
         /* Set block information */
@@ -494,7 +520,7 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
 
     /* Initialisation complete */
     status |= VIRTIO_CONFIG_S_DRIVER_OK;
-    virtio_cfg_write8(vdev, VIRTIO_PCI_STATUS, status);
+    virtio_cfg_write8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS, status);
 
     fword("new-device");
     push_str("disk");

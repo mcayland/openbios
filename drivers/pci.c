@@ -808,10 +808,10 @@ int virtio_blk_config_cb(const pci_config_t *config)
 
 			switch (cfg_type) {
 			case VIRTIO_PCI_CAP_COMMON_CFG:
-				common_cfg = (config->assigned[bar] & ~0x0000000F) + offset;
+				common_cfg = arch->host_pci_base + (config->assigned[bar] & ~0x0000000F) + offset;
 				break;
 			case VIRTIO_PCI_CAP_DEVICE_CFG:
-				device_cfg = (config->assigned[bar] & ~0x0000000F) + offset;
+				device_cfg = arch->host_pci_base + (config->assigned[bar] & ~0x0000000F) + offset;
 				break;
 			}
 		}
