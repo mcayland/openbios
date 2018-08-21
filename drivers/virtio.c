@@ -415,8 +415,8 @@ NODE_METHODS(ob_virtio) = {
     { "dma-sync",      ob_virtio_dma_sync    },
 };
 
-void ob_virtio_init(const char *path, const char *dev_name, uint64_t base,
-                    uint64_t offset, int idx)
+void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
+                    uint64_t device_cfg, uint64_t base, uint64_t offset, int idx)
 {
     char buf[256];
     phandle_t ph;

@@ -11,6 +11,17 @@
 #ifndef VIRTIO_H
 #define VIRTIO_H
 
+/* Common configuration */ 
+#define VIRTIO_PCI_CAP_COMMON_CFG       1 
+/* Notifications */ 
+#define VIRTIO_PCI_CAP_NOTIFY_CFG       2 
+/* ISR Status */ 
+#define VIRTIO_PCI_CAP_ISR_CFG          3 
+/* Device specific configuration */ 
+#define VIRTIO_PCI_CAP_DEVICE_CFG       4 
+/* PCI configuration access */ 
+#define VIRTIO_PCI_CAP_PCI_CFG          5 
+
 /* A 32-bit r/o bitmask of the features supported by the host */
 #define VIRTIO_PCI_HOST_FEATURES        0
 
