@@ -111,9 +111,8 @@ static void virtio_cfg_write64m(uint64_t cfg_addr, int addr, uint64_t value)
 
 static long virtio_notify(VDev *vdev, int vq_idx, long cookie)
 {
-    //virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_NOTIFY, vq_idx);
-    virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_QUEUE_NOTIFY, vq_idx);
-    
+    virtio_cfg_write16m(vdev->notify, 0x0, vq_idx);
+
     return 0;
 }
 
@@ -461,7 +460,7 @@ NODE_METHODS(ob_virtio) = {
 };
 
 void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
-                    uint64_t device_cfg, int idx)
+                    uint64_t device_cfg, uint64_t notify_base, int idx)
 {
     char buf[256];
     phandle_t ph;
@@ -486,7 +485,7 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
     vdev = malloc(sizeof(VDev));
     vdev->common_cfg = common_cfg;
     vdev->device_cfg = device_cfg;
-    vdev->notify_offset = virtio_cfg_read16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_NOFF);
+    vdev->notify = notify_base + virtio_cfg_read16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_NOFF);
 
     /* Indicate we recognise the device */
     status = virtio_cfg_read8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS);

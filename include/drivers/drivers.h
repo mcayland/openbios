@@ -140,8 +140,8 @@ unsigned char keyboard_readdata(void);
 #endif
 #endif
 #ifdef CONFIG_DRIVER_VIRTIO_BLK
-void ob_virtio_init(const char *path, const char *dev_name,
-                    uint64_t common_cfg, uint64_t device_cfg, int idx);
+void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
+                    uint64_t device_cfg, uint64_t notify_base, int idx);
 #endif
 int macio_get_nvram_size(void);
 void macio_nvram_put(char *buf);

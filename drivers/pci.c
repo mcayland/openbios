@@ -782,7 +782,7 @@ int virtio_blk_config_cb(const pci_config_t *config)
 	uint8_t cfg_type, bar;
 	uint16_t status;
 	uint32_t offset;
-	uint64_t common_cfg = 0, device_cfg = 0;
+	uint64_t common_cfg = 0, device_cfg = 0, notify_base = 0;
 
 	addr = PCI_ADDR(
 		PCI_BUS(config->dev),
@@ -810,6 +810,9 @@ int virtio_blk_config_cb(const pci_config_t *config)
 			case VIRTIO_PCI_CAP_COMMON_CFG:
 				common_cfg = arch->host_pci_base + (config->assigned[bar] & ~0x0000000F) + offset;
 				break;
+            case VIRTIO_PCI_CAP_NOTIFY_CFG:
+                notify_base = arch->host_pci_base + (config->assigned[bar] & ~0x0000000F) + offset;
+                break;
 			case VIRTIO_PCI_CAP_DEVICE_CFG:
 				device_cfg = arch->host_pci_base + (config->assigned[bar] & ~0x0000000F) + offset;
 				break;
@@ -824,7 +827,7 @@ int virtio_blk_config_cb(const pci_config_t *config)
 		return 0;
 	}
 
-	ob_virtio_init(config->path, "virtio-blk", common_cfg, device_cfg, idx);
+	ob_virtio_init(config->path, "virtio-blk", common_cfg, device_cfg, notify_base, idx);
 #endif
 	return 0;
 }

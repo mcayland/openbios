@@ -320,7 +320,7 @@ typedef struct ScsiDevice ScsiDevice;
 struct VDev {
     uint64_t common_cfg;
     uint64_t device_cfg;
-    uint16_t notify_offset;
+    uint64_t notify;
     uint64_t pos;
     int nr_vqs;
     VRing *vrings;
