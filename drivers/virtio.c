@@ -21,12 +21,12 @@
 
 #define VRING_WAIT_REPLY_TIMEOUT 10000
 
-
+/*
 static uint8_t virtio_cfg_read8(VDev *vdev, int addr)
 {
     return inb((uint32_t)(vdev->io_base + addr));
 }
-
+*/
 static uint8_t virtio_cfg_read8m(uint64_t cfg_addr, int addr)
 {
     return in_8((uint8_t *)(uintptr_t)(cfg_addr + addr));
@@ -51,17 +51,17 @@ static uint16_t virtio_cfg_read16m(uint64_t cfg_addr, int addr)
 {
     return in_le16((uint16_t *)(uintptr_t)(cfg_addr + addr));
 }
-
+/*
 static void virtio_cfg_write16(VDev *vdev, int addr, uint16_t value)
 {
     outw(value, vdev->io_base + addr);
 }
-
+*/
 static void virtio_cfg_write16m(uint64_t cfg_addr, int addr, uint16_t value)
 {
     out_le16((uint16_t *)(uintptr_t)(cfg_addr + addr), value);
 }
-
+/*
 static uint32_t virtio_cfg_read32(VDev *vdev, int addr)
 {
     return inl(vdev->io_base + addr);
@@ -71,7 +71,17 @@ static void virtio_cfg_write32(VDev *vdev, int addr, uint32_t value)
 {
     outl(value, vdev->io_base + addr);
 }
+*/
+static uint32_t virtio_cfg_read32m(uint64_t cfg_addr, int addr)
+{
+    return in_le32((uint32_t *)(uintptr_t)(cfg_addr + addr));
+}
 
+static void virtio_cfg_write32m(uint64_t cfg_addr, int addr, uint32_t value)
+{
+    out_le32((uint32_t *)(uintptr_t)(cfg_addr + addr), value);
+}
+/*
 static uint64_t virtio_cfg_read64(VDev *vdev, int addr)
 {
     uint64_t q;
@@ -84,11 +94,26 @@ static uint64_t virtio_cfg_read64(VDev *vdev, int addr)
 
     return q;
 }
+*/
+static uint64_t virtio_cfg_read64m(uint64_t cfg_addr, int addr)
+{
+    uint64_t q = (virtio_cfg_read32m(cfg_addr + 4, addr) << 32);
+    q |= virtio_cfg_read32m(cfg_addr, addr);
+
+    return q;
+}
+
+static void virtio_cfg_write64m(uint64_t cfg_addr, int addr, uint64_t value)
+{
+    virtio_cfg_write32m(cfg_addr, addr, (value & 0xffffffff));
+    virtio_cfg_write32m(cfg_addr, addr + 4, ((value >> 32) & 0xffffffff));    
+}
 
 static long virtio_notify(VDev *vdev, int vq_idx, long cookie)
 {
-    virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_NOTIFY, vq_idx);
-
+    //virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_NOTIFY, vq_idx);
+    virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_QUEUE_NOTIFY, vq_idx);
+    
     return 0;
 }
 
@@ -436,13 +461,14 @@ NODE_METHODS(ob_virtio) = {
 };
 
 void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
-                    uint64_t device_cfg, uint64_t base, uint64_t offset, int idx)
+                    uint64_t device_cfg, int idx)
 {
     char buf[256];
     phandle_t ph;
     ucell addr;
     int i;
     uint8_t status;
+    uint32_t feature;
     VDev *vdev, **_vdev;
 
     REGISTER_NODE_METHODS(ob_virtio, path);
@@ -458,14 +484,25 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
     _vdev = cell2pointer(POP());
 
     vdev = malloc(sizeof(VDev));
-    // FIXME
-    vdev->io_base = offset;
     vdev->common_cfg = common_cfg;
     vdev->device_cfg = device_cfg;
+    vdev->notify_offset = virtio_cfg_read16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_NOFF);
 
     /* Indicate we recognise the device */
     status = virtio_cfg_read8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS);
     status |= VIRTIO_CONFIG_S_ACKNOWLEDGE | VIRTIO_CONFIG_S_DRIVER;
+    virtio_cfg_write8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS, status);
+
+    /* Negotiate features: we must acknowledge VIRTIO_F_VERSION_1 to enable
+       little endian accesses on QEMU */
+    virtio_cfg_write32m(vdev->common_cfg, VIRTIO_PCI_COMMON_DFSELECT, 0x1);
+    virtio_cfg_write32m(vdev->common_cfg, VIRTIO_PCI_COMMON_GFSELECT, 0x1);
+    feature = virtio_cfg_read32m(vdev->common_cfg, VIRTIO_PCI_COMMON_DF);
+    feature &= 1ULL << (VIRTIO_F_VERSION_1 - 32);
+    virtio_cfg_write32m(vdev->common_cfg, VIRTIO_PCI_COMMON_GF, feature);
+
+    status = virtio_cfg_read8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS);
+    status |= VIRTIO_CONFIG_S_FEATURES_OK;
     virtio_cfg_write8m(vdev->common_cfg, VIRTIO_PCI_COMMON_STATUS, status);
 
     vdev->senseid = VIRTIO_ID_BLOCK;
@@ -493,26 +530,29 @@ void ob_virtio_init(const char *path, const char *dev_name, uint64_t common_cfg,
             .num = 0,
         };
         
-        virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_SELECT, i);
+        virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_SELECT, i);        
         info.num = virtio_cfg_read16m(vdev->common_cfg, VIRTIO_PCI_COMMON_NUMQ);
 
-        //virtio_cfg_write16(vdev, VIRTIO_PCI_QUEUE_SEL, i);
-        //info.num = virtio_cfg_read16(vdev, VIRTIO_PCI_QUEUE_NUM);
-        
         vring_init(&vdev->vrings[i], &info);
-
+        
         /* Set block information */
         vdev->guessed_disk_nature = VIRTIO_GDN_NONE;
         vdev->config.blk.blk_size = VIRTIO_SECTOR_SIZE;
         vdev->config.blk.physical_block_exp = 0;
 
         /* Read sectors */
-        vdev->config.blk.capacity = virtio_cfg_read64(vdev, 0x14);
+        vdev->config.blk.capacity = virtio_cfg_read64m(vdev->device_cfg, 0);
 
-        /* Set queue address */
-        virtio_cfg_read32(vdev, VIRTIO_PCI_QUEUE_PFN);
-        virtio_cfg_write32(vdev, VIRTIO_PCI_QUEUE_PFN,
-                           va2pa(info.queue) >> VIRTIO_PCI_QUEUE_ADDR_SHIFT);
+        /* Set queue addresses */
+        virtio_cfg_write64m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_DESCLO,
+                            va2pa((uintptr_t)&vdev->vrings[i].desc[0]));
+        virtio_cfg_write64m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_AVAILLO,
+                            va2pa((uintptr_t)&vdev->vrings[i].avail[0]));
+        virtio_cfg_write64m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_USEDLO,
+                            va2pa((uintptr_t)&vdev->vrings[i].used[0]));
+        
+        /* Enable queue */
+        virtio_cfg_write16m(vdev->common_cfg, VIRTIO_PCI_COMMON_Q_ENABLE, 1);
     }
 
     *_vdev = vdev;

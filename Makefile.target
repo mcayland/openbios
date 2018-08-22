@@ -29,7 +29,7 @@ CFLAGS+= -O0 -g -DNATIVE_BITWIDTH_EQUALS_HOST_BITWIDTH -USWAP_ENDIANNESS
 CFLAGS+= -Wall -Wredundant-decls -Wshadow -Wpointer-arith
 CFLAGS+= -Wstrict-prototypes -Wmissing-declarations -Wundef -Wendif-labels
 CFLAGS+= -Wstrict-aliasing -Wwrite-strings -Wmissing-prototypes -Wnested-externs
-CFLAGS+= -Werror
+#CFLAGS+= -Werror
 # Flags for dependency generation
 CFLAGS+= -MMD -MP -MT $@ -MF '$(*D)/$(*F).d'
 INCLUDES := -I$(SRCDIR)/include -I$(SRCDIR)/kernel/include -I$(ODIR)/target/include

@@ -824,8 +824,7 @@ int virtio_blk_config_cb(const pci_config_t *config)
 		return 0;
 	}
 
-	ob_virtio_init(config->path, "virtio-blk", common_cfg, device_cfg,
-					arch->io_base, config->assigned[0] & ~0x0000000F, idx);
+	ob_virtio_init(config->path, "virtio-blk", common_cfg, device_cfg, idx);
 #endif
 	return 0;
 }

@@ -98,8 +98,13 @@
 #define VIRTIO_CONFIG_S_DRIVER          2
 /* Driver has used its parts of the config, and is happy */
 #define VIRTIO_CONFIG_S_DRIVER_OK       4
+/* Driver has finished configuring features */
+#define VIRTIO_CONFIG_S_FEATURES_OK     8
 /* We've given up on this device. */
 #define VIRTIO_CONFIG_S_FAILED          0x80
+
+/* v1.0 compliant. */
+#define VIRTIO_F_VERSION_1              32
 
 enum VirtioDevType {
     VIRTIO_ID_NET = 1,
@@ -313,9 +318,9 @@ struct ScsiDevice {
 typedef struct ScsiDevice ScsiDevice;
 
 struct VDev {
-    uint32_t io_base;
     uint64_t common_cfg;
     uint64_t device_cfg;
+    uint16_t notify_offset;
     uint64_t pos;
     int nr_vqs;
     VRing *vrings;
