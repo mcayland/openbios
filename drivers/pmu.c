@@ -501,7 +501,7 @@ NODE_METHODS(rtc) = {
 static void rtc_init(char *path)
 {
     phandle_t aliases;
-    char buf[64];
+    char buf[128];
 
     push_str(path);
     fword("find-device");
