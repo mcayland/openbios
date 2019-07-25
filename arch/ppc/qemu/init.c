@@ -859,6 +859,13 @@ arch_of_init(void)
     feval("['] ppc-dma-sync to (dma-sync)");
 
 #ifdef CONFIG_DRIVER_PCI
+    if (machine_id == ARCH_MAC99 || machine_id == ARCH_MAC99_U3) {
+        ob_unin_init();
+
+        /* The NewWorld NVRAM is not located in the MacIO device */
+        macio_nvram_init("/", 0);
+    }
+
     ob_pci_init();
 #endif
 
