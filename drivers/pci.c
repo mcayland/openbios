@@ -2080,9 +2080,6 @@ int ob_pci_init(void)
 
     PCI_DPRINTF("Initializing PCI host bridge...\n");
 
-    push_str("/");
-    fword("find-device");
-
     /* Find all PCI bridges */
 
     mem_base = arch->pci_mem_base;
@@ -2124,8 +2121,6 @@ int ob_pci_init(void)
     /* configure the host bridge interrupt map */
     intc = ob_pci_host_set_interrupt_map(phandle_host);
     ob_pci_bus_set_interrupt_map(phandle_host, intc, ob_pci_host_bus_interrupt);
-
-    device_end();
 
     return 0;
 }
