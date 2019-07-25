@@ -27,7 +27,7 @@
 
 #define MEMORY_SIZE	(256*1024)	/* 256K ram for hosted system */
 /* 512K for the dictionary  */
-#define DICTIONARY_SIZE (512 * 1024 / sizeof(ucell))
+#define DICTIONARY_SIZE (384 * 1024 / sizeof(ucell))
 #ifdef __powerpc64__
 #define DICTIONARY_BASE 0xfff08000 /* this must match the value in ldscript! */
 #define DICTIONARY_SECTION __attribute__((section(".data.dict")))
