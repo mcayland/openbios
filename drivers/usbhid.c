@@ -572,12 +572,13 @@ void ob_usb_hid_add_keyboard(const char *path)
 	push_str("keyboard");
 	fword("device-type");
 
+	snprintf(name, sizeof(name), "%s/keyboard", path);
 	usb_debug("Found keyboard at %s\n", name);
+
 	BIND_NODE_METHODS(get_cur_dev(), usb_kbd);
 
 	fword("finish-device");
 
 	aliases = find_dev("/aliases");
-	snprintf(name, sizeof(name), "%s/keyboard", path);
 	set_property(aliases, "keyboard", name, strlen(name) + 1);
 }
