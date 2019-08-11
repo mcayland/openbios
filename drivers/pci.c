@@ -1254,6 +1254,7 @@ static void ob_pci_add_properties(phandle_t phandle,
 	uint8_t rev;
 	uint8_t class_prog;
 	uint32_t class_code;
+	char path[256];
 
 	vendor_id = pci_config_read16(addr, PCI_VENDOR_ID);
 	device_id = pci_config_read16(addr, PCI_DEVICE_ID);
@@ -1261,20 +1262,22 @@ static void ob_pci_add_properties(phandle_t phandle,
 	class_prog = pci_config_read8(addr, PCI_CLASS_PROG);
 	class_code = pci_config_read16(addr, PCI_CLASS_DEVICE);
 
+    /* Default path if we don't match anything */
+    snprintf(path, sizeof(path), "pci%x,%x", vendor_id, device_id);
+
     if (pci_dev) {
         /**/
         if (pci_dev->name) {
             push_str(pci_dev->name);
             fword("device-name");
         } else {
-            char path[256];
-            snprintf(path, sizeof(path),
-                    "pci%x,%x", vendor_id, device_id);
             push_str(path);
             fword("device-name");
         }
     } else {
         PCI_DPRINTF("*** missing pci_dev\n");
+        push_str(path);
+        fword("device-name");
     }
 
 	/* create properties as described in 2.5 */
