@@ -1939,6 +1939,10 @@ static phandle_t ob_pci_host_set_interrupt_map(phandle_t host)
         target_node = find_dev(buf);
         set_int_property(target_node, "interrupt-parent", dnode);
 
+        snprintf(buf, sizeof(buf), "%s/mac-io/davbus", path);
+        target_node = find_dev(buf);
+        set_int_property(target_node, "interrupt-parent", dnode);
+
         /* QEMU only emulates 2 of the 3 ata buses currently */
         /* On a new world Mac these are not numbered but named by the
          * ATA version they support. Thus we have: ata-3, ata-3, ata-4
