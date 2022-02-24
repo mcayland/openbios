@@ -90,10 +90,10 @@ jobs:
           path: archive
 
       - name: Archive pre-release
-        run: cd archive && zip -r ../openbios-multiarch-latest.zip debug release && cd ..
+        run: cd archive && zip -r ../openbios-multiarch-latest.zip debug release && cd .. && echo $GITHUB_REPOSITORY_OWNER
 
       - name: Upload pre-release (upstream repository only)
-        if: "${{ env.GITHUB_REPOSITORY_OWNER == 'openbios' }}"
+        if: "${{ github.repository_owner == 'mcayland' }}"
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
