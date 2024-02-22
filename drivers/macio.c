@@ -521,6 +521,28 @@ ob_macio_keylargo_init(const char *path, phys_addr_t addr)
     if (has_pmu()) {
         macio_gpio_init(path);
         pmu_init(path, addr);
+
+
+    fword("new-device");
+    push_str("timer");
+    fword("device-name");
+    push_str("timer");
+    fword("encode-string");
+    push_str("device_type");
+    fword("property");
+    PUSH(0x15000);
+    fword("encode-int");
+    PUSH(0x1000);
+    fword("encode-int");
+    fword("encode+");
+    push_str("reg");
+    fword("property");
+    push_str("keylargo-timer");
+    fword("encode-string");
+    push_str("compatible");
+    fword("property");
+    fword("finish-device");
+
     } else {
         cuda_init(path, addr);
     }
