@@ -1,4 +1,4 @@
-FROM ghcr.io/openbios/fcode-utils:master AS cross
+FROM ghcr.io/mcayland/fcode-utils:master AS cross
 
 RUN apt-get update && \
     apt-get install -y wget xz-utils tar && \
